@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV Brutal Auditor — Brutally honest AI resume feedback</title>
+  <meta name="description" content="Upload your CV/resume in PDF or DOCX format and get a savage, direct critique from Google Gemini API. Local parsing, secure BYOK." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0d14'/><path d='M9 24 V8 h10 l4 4 v12 Z' fill='none' stroke='%2300d4ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M13 14 h6 M13 18 h6' fill='none' stroke='%2300d4ff' stroke-width='2'/></svg>" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- CDN Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2977545376736575" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════ HEADER ═══ -->
+  <header class="app-header">
+    <div class="container">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="../inicio/index.html" class="btn-icon" style="color: var(--text-2);" title="Back to home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <div class="logo">
+          <svg class="logo-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 22 V6 h10 l4 4 v12 Z" fill="none" stroke="#00d4ff" stroke-width="1.5"/>
+            <path d="M10 12 h8 M10 16 h8" fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+          </svg>
+          <span class="logo-text">CV Brutal Auditor</span>
+          <span class="logo-badge">AI</span>
+        </div>
+      </div>
+
+      <div class="api-key-area" id="apiKeyArea">
+        <div class="api-key-status" id="apiKeyStatus">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="status-label" id="statusLabel">No API key</span>
+        </div>
+        <button class="btn-ghost btn-sm" id="btnToggleApiKey">Set key</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ MODAL: Setup API Key ═════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="setupModal" hidden>
+    <div class="modal">
+      <button class="modal-close" onclick="closeSetupModal()" aria-label="Close">✕</button>
+      <h2 class="modal-title">Set up your Gemini API Key</h2>
+      <p class="modal-desc">
+        Provide a <strong>Gemini Key</strong> (starts with <code>AIza</code>).<br>
+        It will be encrypted with your PIN and stored locally to share across tools.
+      </p>
+      <div class="input-group" style="margin-bottom:16px;">
+        <input type="password" id="modalApiKeyInput" class="input-field" placeholder="AIzaSy…" autocomplete="off"/>
+        <button class="btn-icon" id="btnToggleApiKeyVis" title="Show / hide">
+          <svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M1 10s3-6 9-6 9 6 9 6-3 6-9 6-9-6-9-6Z" stroke="#94a3b8" stroke-width="1.5"/><circle cx="10" cy="10" r="2.5" stroke="#94a3b8" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label style="display:block; font-size:13px; color:var(--text-2); margin-bottom:8px;">Create a 4-digit PIN</label>
+        <div class="pin-inputs" style="display:flex; gap:10px; justify-content:center;">
+          <input class="pin-input" type="text" inputmode="numeric" maxlength="1" />
+          <input class="pin-input" type="text" inputmode="numeric" maxlength="1" />
+          <input class="pin-input" type="text" inputmode="numeric" maxlength="1" />
+          <input class="pin-input" type="text" inputmode="numeric" maxlength="1" />
+        </div>
+      </div>
+      <div id="modalError" style="color:#ef4444; font-size:13px; min-height:18px; text-align:center;"></div>
+      <div class="modal-actions" style="margin-top:20px; display:flex; flex-wrap:wrap; gap:10px;">
+        <button class="btn-ghost" onclick="closeSetupModal()" style="flex:1;">Cancel</button>
+        <button class="btn-primary" id="btnSaveKey" style="flex:1;">Save & Activate</button>
+        <button class="btn-ghost" id="btnClearKey" style="width:100%; color:#ef4444; border-color:rgba(239,68,68,0.3); display:none;">Delete Saved Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Login with PIN ════════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="loginModal" hidden>
+    <div class="modal" style="text-align:center;">
+      <button class="modal-close" onclick="closeLoginModal()">✕</button>
+      <h2 class="modal-title">Enter your PIN</h2>
+      <p class="modal-desc">Unlock your stored Gemini API Key.</p>
+      <div class="pin-inputs" style="display:flex; gap:10px; justify-content:center; margin:16px 0;">
+        <input class="pin-input" type="text" inputmode="numeric" maxlength="1" />
+        <input class="pin-input" type="text" inputmode="numeric" maxlength="1" />
+        <input class="pin-input" type="text" inputmode="numeric" maxlength="1" />
+        <input class="pin-input" type="text" inputmode="numeric" maxlength="1" />
+      </div>
+      <div id="loginError" style="color:#ef4444; font-size:13px; min-height:18px;"></div>
+      <div class="modal-actions" style="margin-top:20px; display:flex; gap:10px;">
+        <button class="btn-ghost" onclick="closeLoginModal()" style="flex:1;">Cancel</button>
+        <button class="btn-primary" id="btnUnlock" style="flex:1;">Unlock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Interstitial Ad (Execution Lock) ════════════════════════ -->
+  <div class="interstitial-backdrop" id="interstitialAdModal" hidden>
+    <div class="interstitial-content">
+      <div class="interstitial-header">
+        <span>Sponsor Ad</span>
+        <span class="interstitial-countdown" id="adCountdownText">Please wait 5s...</span>
+      </div>
+      <div style="background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 48px 24px; min-height: 250px; display: flex; align-items: center; justify-content: center; color: var(--text-3);">
+        <div style="text-align: center;">
+          <div style="font-size: 24px; color: var(--accent); font-weight: bold; margin-bottom: 8px;">PREMIUM CV OPTIMIZATION</div>
+          <p style="font-size: 14px; color: var(--text-2); max-width: 300px; margin: 0 auto 16px;">Get fully custom templates, detailed ATS checkouts and mock interviews with senior recruiters.</p>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3);">Advertisement</div>
+        </div>
+      </div>
+      <button class="btn-primary btn-lg" id="btnSkipAd" disabled style="width: 100%;">Skip Ad & View Audit</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ MAIN ═══ -->
+  <main class="app-main">
+    <div class="container">
+
+      <!-- ── STATE: HERO ──────────────── -->
+      <section class="hero-section" id="heroSection">
+        <div class="hero-eyebrow">SAVAGE & DIRECT RECRUITER AUDIT</div>
+        <h1 class="hero-title">Is your CV holding<br/>your career back?<br/><span class="text-accent">Get audited. Sincerity first.</span></h1>
+        <p class="hero-sub">Upload your resume in PDF or Word (DOCX) format. Our AI recruiter reviews it ruthlessly, scores it out of 100, and points out the exact improvements you need.</p>
+        <div class="hero-features">
+          <div class="feature-pill">
+            <svg viewBox="0 0 16 16" fill="none" width="14" height="14" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M2 8h12"/></svg>
+            Score out of 100
+          </div>
+          <div class="feature-pill">
+            <svg viewBox="0 0 16 16" fill="none" width="14" height="14" stroke="currentColor" stroke-width="1.5"><path d="M3 13L8 3l5 10H3Z"/></svg>
+            5 Actions to improve
+          </div>
+          <div class="feature-pill">
+            <svg viewBox="0 0 16 16" fill="none" width="14" height="14" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5"/><path d="M8 5v3l2 2"/></svg>
+            100% Client-side privacy
+          </div>
+        </div>
+      </section>
+
+      <!-- Ad Block 1: Top banner -->
+      <div class="ad-container ad-banner" id="adBanner1" aria-label="Advertisement">
+        <div class="ad-placeholder">Advertisement</div>
+      </div>
+
+      <!-- ── DROP ZONE ──────────────────────────────────────────────── -->
+      <section class="upload-section" id="uploadSection">
+        <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Upload PDF or DOCX resume">
+          <div class="drop-zone-inner">
+            <div class="drop-icon">
+              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+                <path d="M24 32V16M16 24l8-8 8 8" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 36a8 8 0 0 1 0-16h2a12 12 0 0 1 23.6-2.4A8 8 0 1 1 40 36H8Z" stroke="#00d4ff" stroke-width="1.5" stroke-linejoin="round" opacity="0.5"/>
+              </svg>
+            </div>
+            <p class="drop-title">Drop your resume here</p>
+            <p class="drop-sub">or <label for="fileInput" class="drop-link">browse files</label></p>
+            <p class="drop-hint">PDF or DOCX · Secure local parsing</p>
+          </div>
+          <input type="file" id="fileInput" accept=".pdf,.docx" hidden aria-hidden="true"/>
+        </div>
+      </section>
+
+      <!-- ── FILE INFO BAR ──────────────────────────────────────────── -->
+      <section class="file-info-bar" id="fileInfoBar" hidden>
+        <div class="file-meta">
+          <span class="file-icon">📄</span>
+          <span class="file-name" id="fileName">resume.pdf</span>
+          <span class="file-sep">·</span>
+          <span class="file-stat" id="fileStat">0 KB</span>
+        </div>
+        <button class="btn-ghost btn-sm btn-danger" id="btnRemoveFile">✕ Remove</button>
+      </section>
+
+      <!-- ── EXTRACTED PREVIEW ──────────────────────────────────────── -->
+      <section class="preview-section" id="previewSection" hidden>
+        <div class="section-header">
+          <h2 class="section-title">Resume Text Preview <span class="section-badge">first 1000 characters</span></h2>
+        </div>
+        <div class="text-preview-box" id="textPreviewBox"></div>
+
+        <!-- CTA to run AI analysis -->
+        <div class="cta-bar">
+          <button class="btn-primary btn-lg btn-glow" id="btnAnalyze" disabled>
+            <svg viewBox="0 0 20 20" fill="none" width="18" height="18" stroke="currentColor" stroke-width="1.5">
+              <circle cx="10" cy="10" r="8"/>
+              <path d="M10 6v4l3 3" stroke-linecap="round"/>
+            </svg>
+            Audit My Resume
+          </button>
+          <p class="cta-hint" id="ctaHint">Set your API key to enable auditing</p>
+        </div>
+      </section>
+
+      <!-- Ad Block 2: Mid-page -->
+      <div class="ad-container ad-mid" id="adMid" aria-label="Advertisement" hidden>
+        <div class="ad-placeholder">Advertisement</div>
+      </div>
+
+      <!-- ── LOADING STATE ───────────────────────────────────────────── -->
+      <section class="loading-section" id="loadingSection" hidden>
+        <div class="loading-card">
+          <div class="loading-orb"></div>
+          <div class="loading-text">
+            <p class="loading-status" id="loadingStatus">Analyzing document structure…</p>
+            <div class="loading-bar-track"><div class="loading-bar-fill" id="loadingBarFill"></div></div>
+          </div>
+          <button class="btn-ghost btn-sm" id="btnCancelAnalysis">Cancel</button>
+        </div>
+      </section>
+
+      <!-- ── RESULTS SECTION ─────────────────────────────────────────── -->
+      <section class="results-section" id="resultsSection" hidden>
+
+        <!-- Score gauge -->
+        <div class="score-area">
+          <div class="gauge-wrapper">
+            <svg class="gauge-svg" viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg" id="gaugeSvg">
+              <!-- Track -->
+              <path d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="#1e2a3a" stroke-width="16" stroke-linecap="round"/>
+              <!-- Fill -->
+              <path id="gaugeFill" d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="#00d4ff" stroke-width="16" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+            </svg>
+            <div class="gauge-center">
+              <span class="gauge-score" id="gaugeScore">—</span>
+              <span class="gauge-label">Resume Score</span>
+            </div>
+          </div>
+          <div class="score-verdict" id="scoreVerdict"></div>
+        </div>
+
+        <!-- Streaming diagnosis -->
+        <div class="diagnosis-card" id="diagnosisCard">
+          <div class="diagnosis-header">
+            <h2 class="section-title">Audit Report</h2>
+            <div class="diagnosis-actions">
+              <button class="btn-ghost btn-sm" id="btnCopyReport">
+                <svg viewBox="0 0 16 16" fill="none" width="14" height="14" stroke="currentColor" stroke-width="1.2"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M2 11V3a1 1 0 0 1 1-1h8" stroke-linecap="round"/></svg>
+                Copy Markdown
+              </button>
+              <button class="btn-secondary btn-sm" id="btnNewSession">
+                <svg viewBox="0 0 16 16" fill="none" width="14" height="14" stroke="currentColor" stroke-width="1.2"><path d="M3 8a5 5 0 1 0 1-2.96"/><path d="M1 4l3 1-1 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                New Audit
+              </button>
+            </div>
+          </div>
+          <div class="diagnosis-body" id="diagnosisBody"></div>
+        </div>
+
+        <!-- Ad Block 3: After results -->
+        <div class="ad-container ad-results" id="adResults" aria-label="Advertisement">
+          <div class="ad-placeholder">Advertisement</div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════ FOOTER ═══ -->
+  <footer class="app-footer">
+    <div class="container footer-inner">
+      <span class="footer-copy">© 2026 CV Brutal Auditor · <a href="../inicio/privacy.html">Privacy Policy</a> · <a href="../inicio/terms.html">Terms of Use</a> · <a href="../inicio/about.html">About & Contact</a></span>
+      <span class="footer-tagline">No resume details are stored. Everything stays in your browser.</span>
+    </div>
+  </footer>
+
+  <!-- JS Modules -->
+  <script src="js/crypto-js.min.js"></script>
+  <script src="js/vault.js"></script>
+  <script src="js/gemini-api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
