@@ -288,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     handleFileSelection(file);
   });
   dropZone.addEventListener('click', () => fileInput.click());
+
   fileInput.addEventListener('change', () => {
     handleFileSelection(fileInput.files[0]);
   });
@@ -311,47 +312,17 @@ document.addEventListener('DOMContentLoaded', () => {
     updateVaultUI();
   }
 
-  /* ═════════════════════════════════════════════════ INTERSTITIAL ═══ */
-  function startInterstitialAd(onAdFinished) {
-    interstitialAdModal.removeAttribute('hidden');
-    adCountdownVal = 5;
-    btnSkipAd.disabled = true;
-    const lang = Lang.get();
-    btnSkipAd.textContent = lang === 'es' ? `Por favor espera ${adCountdownVal}s...` : `Please wait ${adCountdownVal}s...`;
-
-    adTimer = setInterval(() => {
-      adCountdownVal--;
-      if (adCountdownVal > 0) {
-        btnSkipAd.textContent = lang === 'es' ? `Por favor espera ${adCountdownVal}s...` : `Please wait ${adCountdownVal}s...`;
-      } else {
-        clearInterval(adTimer);
-        adCountdownText.textContent = lang === 'es' ? "Anuncio finalizado" : "Ad Finished";
-        btnSkipAd.disabled = false;
-        btnSkipAd.textContent = lang === 'es' ? "Saltar anuncio y ver auditoría" : "Skip Ad & View Audit";
-      }
-    }, 1000);
-
-    btnSkipAd.onclick = () => {
-      interstitialAdModal.setAttribute('hidden', '');
-      onAdFinished();
-    };
-  }
-
-  /* ═════════════════════════════════════════════════ AI AUDIT ═══════ */
   btnAnalyze.addEventListener('click', () => {
     if (!Vault.isUnlocked() || !extractedText) return;
-
     previewSection.setAttribute('hidden', '');
     fileInfoBar.setAttribute('hidden', '');
     adMid.removeAttribute('hidden');
-
-    startInterstitialAd(() => {
-      runAIEvaluation();
-    });
+    runAIEvaluation();
   });
 
   function runAIEvaluation() {
     loadingSection.removeAttribute('hidden');
+    resultsSection.setAttribute('hidden', '');
     const lang = Lang.get();
     loadingStatus.textContent = lang === 'es' ? "Analizando contenido del currículum..." : "Analyzing resume content...";
     loadingBarFill.style.width = "20%";

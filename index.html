@@ -109,23 +109,7 @@
     </div>
   </div>
 
-  <!-- ══ MODAL: Interstitial Ad (Execution Lock) ════════════════════════ -->
-  <div class="interstitial-backdrop" id="interstitialAdModal" hidden>
-    <div class="interstitial-content">
-      <div class="interstitial-header">
-        <span data-en="Sponsor Ad" data-es="Anuncio de Patrocinador">Sponsor Ad</span>
-        <span class="interstitial-countdown" id="adCountdownText" data-en="Please wait 5s..." data-es="Por favor espera 5s...">Please wait 5s...</span>
-      </div>
-      <div style="background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 48px 24px; min-height: 250px; display: flex; align-items: center; justify-content: center; color: var(--text-3);">
-        <div style="text-align: center;">
-          <div style="font-size: 24px; color: var(--accent); font-weight: bold; margin-bottom: 8px;" data-en="PREMIUM CV OPTIMIZATION" data-es="OPTIMIZACIÓN PREMIUM DE CV">PREMIUM CV OPTIMIZATION</div>
-          <p style="font-size: 14px; color: var(--text-2); max-width: 300px; margin: 0 auto 16px;" data-en="Get fully custom templates, detailed ATS checkouts and mock interviews with senior recruiters." data-es="Consigue plantillas personalizadas, revisiones ATS detalladas y simulaciones de entrevistas con reclutadores senior.">Get fully custom templates, detailed ATS checkouts and mock interviews with senior recruiters.</p>
-          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3);" data-en="Advertisement" data-es="Publicidad">Advertisement</div>
-        </div>
-      </div>
-      <button class="btn-primary btn-lg" id="btnSkipAd" disabled style="width: 100%;" data-en="Skip Ad & View Audit" data-es="Saltar anuncio y ver auditoría">Skip Ad & View Audit</button>
-    </div>
-  </div>
+  <!-- Interstitial Ad modal removed to comply with zero-gating AdSense rules -->
 
   <!-- ═══════════════════════════════════════════════════════ MAIN ═══ -->
   <main class="app-main">
@@ -266,30 +250,43 @@
           <div class="ad-placeholder" data-en="Advertisement" data-es="Publicidad">Advertisement</div>
         </div>
 
-      </section>
-
-    </div>
-  </main>
-
-  <!-- ═══════════════════════════════════════════════════════ FOOTER ═══ -->
-  <footer class="app-footer">
-    <div class="container footer-inner">
-      <span class="footer-copy">© 2026 CV Brutal Auditor · <a href="../inicio/privacy.html">Privacy Policy</a> · <a href="../inicio/terms.html">Terms of Use</a> · <a href="../inicio/about.html">About & Contact</a></span>
-      <span class="footer-tagline" data-en="No resume details are stored. Everything stays in your browser." data-es="No se guarda ningún dato de tu CV. Todo permanece en tu navegador.">No resume details are stored. Everything stays in your browser.</span>
-    </div>
-  </footer>.96"/><path d="M1 4l3 1-1 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                New Audit
-              </button>
+      <!-- ── EDUCATIONAL GUIDE & FAQS ── -->
+      <section style="margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border); margin-bottom: 32px;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
+          <div style="font-size: 1.2rem; font-weight: 600; color: var(--text-1); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent);"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            <span data-en="Resume Writing & ATS Optimization Guide" data-es="Guía de Redacción de Currículum y Optimización ATS">Resume Writing & ATS Optimization Guide</span>
+          </div>
+          <div style="color: var(--text-2); font-size: 0.95rem; line-height: 1.6; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+            <div>
+              <h4 style="color: var(--accent); margin-bottom: 8px; font-size: 1.05rem; font-weight: 600;" data-en="How ATS Systems Parse Your Resume" data-es="Cómo los Sistemas ATS Analizan tu Currículum">How ATS Systems Parse Your Resume</h4>
+              <p style="margin-bottom: 12px;" data-en="Applicant Tracking Systems (ATS) are software applications recruiters use to filter resumes automatically. They scan for specific keywords, job titles, and hard skills matching the job description. If your resume lacks structural simplicity, the ATS parser will corrupt your data, leading to instant rejection." data-es="Los Sistemas de Seguimiento de Candidatos (ATS) son aplicaciones de software que los reclutadores usan para filtrar currículums automáticamente. Buscan palabras clave específicas, cargos y habilidades duras que coincidan con la descripción del puesto. Si tu currículum carece de simplicidad estructural, el analizador ATS corromperá tus datos, lo que llevará al rechazo instantáneo."></p>
+              <p data-en="To bypass these filters, avoid using complex tables, charts, graphics, or text boxes that hide info from scanners. Opt for clean, standard typography and straightforward sections." data-es="Para superar estos filtros, evita el uso de tablas complejas, gráficos, diagramas o cuadros de texto que oculten información a los escáneres. Opta por una tipografía limpia y estándar y secciones sencillas."></p>
+            </div>
+            <div>
+              <h4 style="color: var(--accent); margin-bottom: 8px; font-size: 1.05rem; font-weight: 600;" data-en="Sincerity, Metrics, and Hard Results" data-es="Sinceridad, Métricas y Resultados Reales">Sincerity, Metrics, and Hard Results</h4>
+              <p style="margin-bottom: 12px;" data-en="Generic descriptors like 'hardworking leader' or 'detail-oriented specialist' do not work. Modern recruiters and advanced AI models require verifiable quantitative metrics. Replace passive task lists with action-verb accomplishments." data-es="Los descriptores genéricos como 'líder trabajador' o 'especialista detallista' no funcionan. Los reclutadores modernos y los modelos avanzados de IA requieren métricas cuantitativas verificables. Reemplaza las listas de tareas pasivas con logros basados en verbos de acción."></p>
+              <ul style="padding-left: 20px; margin-bottom: 12px; list-style-type: disc;">
+                <li style="margin-bottom: 6px;" data-en="Quantify achievements: 'Increased sales by 24% over 6 months' instead of 'Responsible for sales'." data-es="Cuantifica los logros: 'Aumenté las ventas en un 24% durante 6 meses' en lugar de 'Responsable de las ventas'."></li>
+                <li style="margin-bottom: 6px;" data-en="Show scale: Include budget sizes, team size, or volume of transactions managed." data-es="Muestra la escala: Incluye presupuestos, tamaño de equipo o volumen de transacciones gestionadas."></li>
+                <li style="margin-bottom: 6px;" data-en="Active verbs: Use initiated, engineered, streamlined, or optimized." data-es="Verbos activos: Usa inició, diseñó, simplificó u optimizó."></li>
+              </ul>
             </div>
           </div>
-          <div class="diagnosis-body" id="diagnosisBody"></div>
+          <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.05); color: var(--text-2); font-size: 0.95rem; line-height: 1.6;">
+            <h4 style="color: var(--accent); margin-bottom: 12px; font-size: 1.05rem; font-weight: 600;" data-en="Frequently Asked Questions (FAQ)" data-es="Preguntas Frecuentes (FAQ)">Frequently Asked Questions (FAQ)</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+              <div>
+                <strong style="color: var(--text-1); display: block; margin-bottom: 6px;" data-en="How secure is this resume auditor?" data-es="¿Qué tan seguro es este auditor de currículums?">How secure is this resume auditor?</strong>
+                <p data-en="Extremely secure. All document parsing, text extraction, and decryption happen locally in your web browser. Your raw PDF or Word files are never uploaded to any server. We only send the raw text metadata to the Gemini API directly from your browser using your secure key." data-es="Extremadamente seguro. Todo el análisis del documento, la extracción de texto y la desencriptación ocurren localmente en tu navegador web. Tus archivos PDF o Word originales nunca se suben a ningún servidor. Solo enviamos los metadatos de texto a la API de Gemini desde tu navegador usando tu clave segura."></p>
+              </div>
+              <div>
+                <strong style="color: var(--text-1); display: block; margin-bottom: 6px;" data-en="How does the BYOK (Bring Your Own Key) model work?" data-es="¿Cómo funciona el modelo BYOK (Trae Tu Propia Clave)?">How does the BYOK (Bring Your Own Key) model work?</strong>
+                <p data-en="This website runs client-side only. By providing your own Gemini API Key, you pay nothing to us. The key is encrypted using AES-256 with a 4-digit PIN you create and stored in your browser's local storage so you don't have to enter it every time." data-es="Este sitio web funciona solo del lado del cliente. Al proporcionar tu propia clave API de Gemini, no nos pagas nada. La clave se encripta usando AES-256 con un PIN de 4 dígitos que creas y se almacena en el almacenamiento local de tu navegador para que no tengas que ingresarla cada vez."></p>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <!-- Ad Block 3: After results -->
-        <div class="ad-container ad-results" id="adResults" aria-label="Advertisement">
-          <div class="ad-placeholder">Advertisement</div>
-        </div>
-
       </section>
 
     </div>
@@ -297,9 +294,9 @@
 
   <!-- ═══════════════════════════════════════════════════════ FOOTER ═══ -->
   <footer class="app-footer">
-    <div class="container footer-inner">
+    <div class="container footer-inner" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
       <span class="footer-copy">© 2026 CV Brutal Auditor · <a href="../inicio/privacy.html">Privacy Policy</a> · <a href="../inicio/terms.html">Terms of Use</a> · <a href="../inicio/about.html">About & Contact</a></span>
-      <span class="footer-tagline">No resume details are stored. Everything stays in your browser.</span>
+      <span class="footer-tagline" data-en="No resume details are stored. Everything stays in your browser." data-es="No se guarda ningún dato de tu CV. Todo permanece en tu navegador.">No resume details are stored. Everything stays in your browser.</span>
     </div>
   </footer>
 
