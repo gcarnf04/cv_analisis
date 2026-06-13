@@ -80,30 +80,47 @@ document.addEventListener('DOMContentLoaded', () => {
     modalApiKeyInput.type = isPass ? 'text' : 'password';
   });
 
+  // Language switcher setup
+  const langSelect = document.querySelector('.lang-select');
+  if (langSelect) {
+    langSelect.value = Lang.get();
+    langSelect.addEventListener('change', (e) => {
+      Lang.set(e.target.value);
+    });
+  }
+  window.addEventListener('langchange', () => {
+    updateVaultUI();
+    if (selectedFile) {
+      const ext = selectedFile.name.split('.').pop().toLowerCase();
+      updateFileInfoBar(selectedFile);
+    }
+  });
+
   function updateVaultUI() {
     const hasKey = Vault.hasStoredKey();
     const unlocked = Vault.isUnlocked();
+    const lang = Lang.get();
 
     if (unlocked) {
       statusDot.className = "status-dot active";
-      statusLabel.textContent = "API Key Active";
-      btnToggleApiKey.textContent = "Manage Key";
+      statusLabel.textContent = lang === 'es' ? "Clave API Activa" : "API Key Active";
+      btnToggleApiKey.textContent = lang === 'es' ? "Gestionar Clave" : "Manage Key";
       btnAnalyze.disabled = !extractedText;
       ctaHint.style.display = 'none';
     } else if (hasKey) {
       statusDot.className = "status-dot error";
-      statusLabel.textContent = "Locked";
-      btnToggleApiKey.textContent = "Unlock Key";
+      statusLabel.textContent = lang === 'es' ? "Bloqueado" : "Locked";
+      btnToggleApiKey.textContent = lang === 'es' ? "Desbloquear" : "Unlock Key";
       btnAnalyze.disabled = true;
       ctaHint.style.display = 'block';
-      ctaHint.textContent = "Unlock your API key to audit";
+      ctaHint.textContent = lang === 'es' ? "Desbloquea tu clave API para auditar" : "Unlock your API key to audit";
     } else {
       statusDot.className = "status-dot";
-      statusLabel.textContent = "No API key";
-      btnToggleApiKey.textContent = "Set key";
+      statusLabel.textContent = lang === 'es' ? "Sin clave API" : "No API key";
+      btnToggleApiKey.textContent = lang === 'es' ? "Configurar clave" : "Set key";
       btnAnalyze.disabled = true;
       ctaHint.style.display = 'block';
-      ctaHint.textContent = "Provide a Gemini API Key to enable auditing";
+      ctaHint.textContent = lang === 'es' ? "Configura una clave API de Gemini para auditar" : "Provide a Gemini API Key to enable auditing";
     }
   }
 
@@ -186,8 +203,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleFileSelection(file) {
     if (!file) return;
     const ext = file.name.split('.').pop().toLowerCase();
+    const lang = Lang.get();
     if (ext !== 'pdf' && ext !== 'docx') {
-      alert('Unsupported file format. Please upload a PDF or DOCX file.');
+      const msg = lang === 'es' 
+        ? 'Formato de archivo no soportado. Por favor sube un archivo PDF o DOCX.' 
+        : 'Unsupported file format. Please upload a PDF or DOCX file.';
+      alert(msg);
       return;
     }
 
@@ -196,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     heroSection.style.display = 'none';
     previewSection.removeAttribute('hidden');
-    textPreviewBox.textContent = "Loading and extracting text locally...";
+    textPreviewBox.textContent = lang === 'es' ? "Cargando y extrayendo texto localmente..." : "Loading and extracting text locally...";
     btnAnalyze.disabled = true;
 
     const reader = new FileReader();
@@ -214,13 +235,15 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           extractedText = text.trim();
           if (!extractedText) {
-            textPreviewBox.textContent = "Warning: No selectable text could be extracted from this PDF. It might be scanned or empty.";
+            textPreviewBox.textContent = lang === 'es'
+              ? "Advertencia: No se pudo extraer texto seleccionable del PDF. Podría estar escaneado o vacío."
+              : "Warning: No selectable text could be extracted from this PDF. It might be scanned or empty.";
           } else {
             textPreviewBox.textContent = extractedText.slice(0, 1000) + (extractedText.length > 1000 ? "\n\n[... Truncated for preview ...]" : "");
           }
           if (Vault.isUnlocked()) btnAnalyze.disabled = !extractedText;
         } catch (e) {
-          textPreviewBox.textContent = `Error reading PDF file: ${e.message}`;
+          textPreviewBox.textContent = (lang === 'es' ? "Error al leer PDF: " : "Error reading PDF file: ") + e.message;
         }
       };
       reader.readAsArrayBuffer(file);
@@ -231,14 +254,16 @@ document.addEventListener('DOMContentLoaded', () => {
           .then(function(result) {
             extractedText = result.value.trim();
             if (!extractedText) {
-              textPreviewBox.textContent = "Warning: The Word file appears to be empty.";
+              textPreviewBox.textContent = lang === 'es'
+                ? "Advertencia: El archivo de Word parece estar vacío."
+                : "Warning: The Word file appears to be empty.";
             } else {
               textPreviewBox.textContent = extractedText.slice(0, 1000) + (extractedText.length > 1000 ? "\n\n[... Truncated for preview ...]" : "");
             }
             if (Vault.isUnlocked()) btnAnalyze.disabled = !extractedText;
           })
           .catch(function(err) {
-            textPreviewBox.textContent = `Error reading Word file: ${err.message}`;
+            textPreviewBox.textContent = (lang === 'es' ? "Error al leer Word: " : "Error reading Word file: ") + err.message;
           });
       };
       reader.readAsArrayBuffer(file);
@@ -291,17 +316,18 @@ document.addEventListener('DOMContentLoaded', () => {
     interstitialAdModal.removeAttribute('hidden');
     adCountdownVal = 5;
     btnSkipAd.disabled = true;
-    btnSkipAd.textContent = `Please wait ${adCountdownVal}s...`;
+    const lang = Lang.get();
+    btnSkipAd.textContent = lang === 'es' ? `Por favor espera ${adCountdownVal}s...` : `Please wait ${adCountdownVal}s...`;
 
     adTimer = setInterval(() => {
       adCountdownVal--;
       if (adCountdownVal > 0) {
-        btnSkipAd.textContent = `Please wait ${adCountdownVal}s...`;
+        btnSkipAd.textContent = lang === 'es' ? `Por favor espera ${adCountdownVal}s...` : `Please wait ${adCountdownVal}s...`;
       } else {
         clearInterval(adTimer);
-        adCountdownText.textContent = "Ad Finished";
+        adCountdownText.textContent = lang === 'es' ? "Anuncio finalizado" : "Ad Finished";
         btnSkipAd.disabled = false;
-        btnSkipAd.textContent = "Skip Ad & View Audit";
+        btnSkipAd.textContent = lang === 'es' ? "Saltar anuncio y ver auditoría" : "Skip Ad & View Audit";
       }
     }, 1000);
 
@@ -326,7 +352,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function runAIEvaluation() {
     loadingSection.removeAttribute('hidden');
-    loadingStatus.textContent = "Analyzing resume content...";
+    const lang = Lang.get();
+    loadingStatus.textContent = lang === 'es' ? "Analizando contenido del currículum..." : "Analyzing resume content...";
     loadingBarFill.style.width = "20%";
 
     const apiKey = Vault.getUnlockedKey();
@@ -394,9 +421,10 @@ document.addEventListener('DOMContentLoaded', () => {
   btnNewSession.addEventListener('click', resetSession);
 
   btnCopyReport.addEventListener('click', () => {
+    const lang = Lang.get();
     navigator.clipboard.writeText(fullDiagnosticReport)
-      .then(() => alert('Audit report copied as Markdown!'))
-      .catch(() => alert('Failed to copy. Please select the text manually.'));
+      .then(() => alert(lang === 'es' ? '¡Informe de auditoría copiado como Markdown!' : 'Audit report copied as Markdown!'))
+      .catch(() => alert(lang === 'es' ? 'Error al copiar. Selecciona el texto manualmente.' : 'Failed to copy. Please select the text manually.'));
   });
 
   /* ── Score gauge rendering ───────────────────────────── */
@@ -417,12 +445,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getVerdictSummary(score) {
+    const lang = Lang.get();
     if (score < 45) {
-      return "Critical rewrite needed. This resume is actively preventing you from getting interviews.";
+      return lang === 'es' 
+        ? "Reescritura crítica necesaria. Este currículum te está impidiendo conseguir entrevistas de forma activa." 
+        : "Critical rewrite needed. This resume is actively preventing you from getting interviews.";
     } else if (score < 75) {
-      return "Average resume. It will get some views, but needs strong metric-driven adjustments to stand out.";
+      return lang === 'es'
+        ? "Currículum promedio. Conseguirá algunas visualizaciones, pero necesita ajustes fuertes basados en métricas para destacar."
+        : "Average resume. It will get some views, but needs strong metric-driven adjustments to stand out.";
     } else {
-      return "Excellent profile structure. Minimal polish recommended to secure top-tier roles.";
+      return lang === 'es'
+        ? "Excelente estructura de perfil. Se recomienda pulido mínimo para asegurar roles de primer nivel."
+        : "Excellent profile structure. Minimal polish recommended to secure top-tier roles.";
     }
   }
 

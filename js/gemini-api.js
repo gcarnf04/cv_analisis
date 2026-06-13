@@ -7,25 +7,36 @@ const GeminiAPI = (() => {
   const MODEL   = 'gemini-2.5-flash-lite';
   const MAX_TOKENS = 1500;
 
-  const SYSTEM_PROMPT = `You are a savage, brutally honest, and experienced senior technical recruiter who does not sugarcoat anything. You audit resumes/CVs ruthlessly.
+  function getSystemPrompt(lang) {
+    const isEs = lang === 'es';
+    const langRule = isEs 
+      ? 'RESPOND ENTIRELY IN SPANISH (en Español). Your entire response, headers, diagnostics, scores, roast, improvements and strengths MUST be in Spanish.' 
+      : 'RESPOND ENTIRELY IN ENGLISH. Your entire response, headers, diagnostics, scores, roast, improvements and strengths MUST be in English.';
+    
+    const auditTitle = isEs ? '## 💀 Auditoría Brutal' : '## 💀 Brutal Audit';
+    const improvementsTitle = isEs ? '## 🔧 5 Mejoras Clave' : '## 🔧 5 Key Improvements';
+    const strengthsTitle = isEs ? '## 🌟 Puntos Fuertes' : '## 🌟 Strengths';
+    const scoreTitle = isEs ? '## 🎯 Puntuación de Calidad: [0–100]' : '## 🎯 Quality Score: [0–100]';
+
+    return `You are a savage, brutally honest, and experienced senior technical recruiter who does not sugarcoat anything. You audit resumes/CVs ruthlessly.
 You will receive the plain text extracted from a user's resume/CV. 
 
 Critique it sincerely, directly, and without corporate fluff. Be critical about formatting issues, buzzword inflation, lack of metrics, weak impact descriptions, and employment gaps or generic skill lists.
 
-RESPOND ENTIRELY IN ENGLISH.
+${langRule}
 
 ## OUTPUT FORMAT (strict Markdown — no deviations)
 
-## 🎯 Quality Score: [0–100]
+${scoreTitle}
 [One highly critical and direct sentence explaining why it got this exact score.]
 
-## 💀 Brutal Audit
+${auditTitle}
 [Write a 2-paragraph sincere, direct, and slightly roasting critique of their CV. Call out useless details, bad structures, formatting traps, cliches, or lack of quantitative achievements. Do not be polite; be real.]
 
-## 🔧 5 Key Improvements
+${improvementsTitle}
 [Provide a numbered list of EXACTLY 5 concrete, actionable suggestions. Be highly specific. If the CV is perfect and there are no improvements, state that clearly, but normally there are always 5 key improvements. Do not provide more or less than 5 points.]
 
-## 🌟 Strengths
+${strengthsTitle}
 [A brief list of 2-3 genuine strengths of the resume (if any) so they know what to keep.]
 
 ## SCORING RULES (apply mathematically, show no working):
@@ -43,6 +54,7 @@ RESPOND ENTIRELY IN ENGLISH.
 - Do not hedge. Do not apologize. Do not mention that you are an AI.
 - Speak directly to the applicant ("Your resume...", "You need to...").
 - Keep total response length between 300 and 500 words.`;
+  }
 
   let abortController = null;
 
@@ -51,15 +63,17 @@ RESPOND ENTIRELY IN ENGLISH.
 
     const userContent = `Here is the extracted text of the CV to audit:\n\n${resumeText}`;
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent?alt=sse&key=${apiKey}`;
+    const currentLang = typeof Lang !== 'undefined' ? Lang.get() : 'en';
 
     try {
-      onStatus('Connecting to Gemini API…', 20);
+      const statusMsg = currentLang === 'es' ? 'Conectando con Gemini API…' : 'Connecting to Gemini API…';
+      onStatus(statusMsg, 20);
       const resp = await fetch(API_URL, {
         method: 'POST',
         signal: abortController.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          systemInstruction: { parts: [{ text: getSystemPrompt(currentLang) }] },
           contents: [{ parts: [{ text: userContent }] }],
           generationConfig: { maxOutputTokens: MAX_TOKENS }
         })
@@ -72,7 +86,8 @@ RESPOND ENTIRELY IN ENGLISH.
         return;
       }
 
-      onStatus('Streaming brutal audit…', 60);
+      const streamMsg = currentLang === 'es' ? 'Generando auditoría brutal…' : 'Streaming brutal audit…';
+      onStatus(streamMsg, 60);
       const reader  = resp.body.getReader();
       const decoder = new TextDecoder();
       let   buffer  = '';
@@ -112,7 +127,7 @@ RESPOND ENTIRELY IN ENGLISH.
 
   /* ── Extract score from markdown text ────────────────── */
   function extractScore(text) {
-    const m = text.match(/Quality Score:\s*(\d{1,3})/i);
+    const m = text.match(/(?:Quality Score|Puntuación de Calidad):\s*(\d{1,3})/i);
     return m ? Math.min(100, Math.max(0, parseInt(m[1], 10))) : null;
   }
 
